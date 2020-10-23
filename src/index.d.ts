@@ -542,6 +542,7 @@ export type UriState = { xml: string | null };
 
 export interface XmlProps extends SvgProps {
   xml: string | null;
+  onError?: (error: Error) => void;
   override?: SvgProps;
 }
 export type XmlState = { ast: JsxAST | null };
