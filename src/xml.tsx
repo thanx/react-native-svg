@@ -110,30 +110,27 @@ export const err = console.error.bind(console);
 
 export function SvgXml(props: XmlProps) {
   const { xml, override } = props;
-  const onError = typeof props.onError == 'function'
-    ? props.onError
-    : (
-      typeof (override as AdditionalProps).onError == 'function'
-        ? (override as AdditionalProps).onError
-        : err
-    )
+  const onError =
+    typeof props.onError == 'function'
+      ? props.onError
+      : typeof (override as AdditionalProps).onError === 'function'
+      ? (override as AdditionalProps).onError
+      : err;
   const ast = useMemo<JsxAST | null>(() => {
     try {
       return xml !== null ? parse(xml) : null;
     } catch (e) {
-      if (typeof onError == 'function') {
+      if (typeof onError === 'function') {
         onError(e);
       }
+      return null;
     }
-  }, [
-    xml,
-    onError
-  ]);
+  }, [xml, onError]);
 
   try {
     return <SvgAst ast={ast} override={override || props} />;
   } catch (error) {
-    onError(error);
+    onError?.(error);
     return null;
   }
 }
@@ -149,8 +146,8 @@ export function SvgUri(props: UriProps) {
   useEffect(() => {
     uri
       ? fetchText(uri)
-        .then(setXml)
-        .catch(onError)
+          .then(setXml)
+          .catch(onError)
       : setXml(null);
   }, [onError, uri]);
   return <SvgXml xml={xml} override={props} />;
@@ -175,10 +172,11 @@ export class SvgFromXml extends Component<XmlProps, XmlState> {
       this.setState({ ast });
     } catch (e) {
       if (typeof this.props.onError == 'function') {
-        this.props.onError(e)
-      }
-      else if (typeof this.props.override.onError == 'function') {
-        this.props.override.onError(e)
+        this.props.onError(e);
+        // @ts-ignore
+      } else if (typeof this.props.override.onError == 'function') {
+        // @ts-ignore
+        this.props.override.onError(e);
       }
     }
   }
